@@ -27,6 +27,10 @@ Core.lua
 Locale.lua
 DB.lua
 Utils.lua
+
+# Modules (extracted from Core.lua for maintainability)
+modules/ItemCache.lua
+
 Options.lua
 Roster.lua
 Scanner.lua
