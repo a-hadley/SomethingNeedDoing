@@ -96,21 +96,6 @@ local function debugDirectory(self, message)
   self:DebugLog(message, true)
 end
 
-local function normalizeRecipeSpellIDValue(value)
-  if type(value) == "table" then
-    value = value.recipeSpellID or value.selectedRecipeSpellID or value.spellID
-  end
-  local n = tonumber(value)
-  if not n then
-    return nil
-  end
-  n = math.floor(n)
-  if n <= 0 then
-    return nil
-  end
-  return n
-end
-
 -- ============================================================================
 -- Item Cache Manager
 -- NOTE: Item cache functions have been moved to modules/ItemCache.lua
@@ -121,9 +106,11 @@ end
 -- NOTE: Recipe data functions have been moved to modules/RecipeData.lua
 -- ============================================================================
 
-function SND:NormalizeRecipeSpellID(value)
-  return normalizeRecipeSpellIDValue(value)
-end
+-- ============================================================================
+-- Recipe Search
+-- NOTE: Recipe search functions have been moved to modules/RecipeSearch.lua
+-- NOTE: NormalizeRecipeSpellID is now defined in RecipeSearch module
+-- ============================================================================
 
 function SND:UpdateDirectoryResults(query)
   if not self.mainFrame or not self.mainFrame.contentFrames then
@@ -181,145 +168,10 @@ function SND:UpdateDirectoryResults(query)
   self:RenderDirectoryList(directoryFrame, results)
 end
 
-function SND:SearchRecipes(query, filters)
-  local cleaned = string.lower((query or ""):gsub("^%s+", ""):gsub("%s+$", ""))
-  if cleaned == "" then
-    local results = {}
-    for recipeSpellID, recipe in pairs(self.db.recipeIndex) do
-      local crafters = self:GetCraftersForRecipe(recipeSpellID, filters)
-      local count = #crafters
-      if count > 0 then
-        table.insert(results, { recipeSpellID = recipeSpellID, name = recipe.name or "", crafterCount = count })
-      end
-    end
-
-    table.sort(results, function(a, b)
-      if a.crafterCount == b.crafterCount then
-        return a.name < b.name
-      end
-      return a.crafterCount > b.crafterCount
-    end)
-
-    return results
-  end
-
-  local results = {}
-  for recipeSpellID, recipe in pairs(self.db.recipeIndex) do
-    local name = recipe.name or ""
-    local outputName = self:GetRecipeOutputItemName(recipeSpellID)
-    local nameMatch = string.find(string.lower(name), cleaned, 1, true)
-    local outputMatch = outputName and string.find(string.lower(outputName), cleaned, 1, true)
-    if nameMatch or outputMatch then
-      local crafters = self:GetCraftersForRecipe(recipeSpellID, filters)
-      local count = #crafters
-      if count > 0 then
-        table.insert(results, { recipeSpellID = recipeSpellID, name = name, crafterCount = count })
-      end
-    end
-  end
-
-  table.sort(results, function(a, b)
-    if a.crafterCount == b.crafterCount then
-      return a.name < b.name
-    end
-    return a.crafterCount > b.crafterCount
-  end)
-
-  return results
-end
-
-function SND:CountCraftersForRecipe(recipeSpellID)
-  local count = 0
-  for _, player in pairs(self.db.players) do
-    if player.professions then
-      for _, prof in pairs(player.professions) do
-        if prof.recipes and prof.recipes[recipeSpellID] then
-          count = count + 1
-          break
-        end
-      end
-    end
-  end
-  return count
-end
-
-function SND:GetCraftersForRecipe(recipeSpellID, filters)
-  local results = {}
-  for playerName, player in pairs(self.db.players) do
-    if player.professions then
-      for _, prof in pairs(player.professions) do
-        if prof.recipes and prof.recipes[recipeSpellID] then
-          local hasSharedMats = player.sharedMats and self:HasSharedMatsForRecipe(player.sharedMats, recipeSpellID) or false
-          if not filters or not filters.professionName or filters.professionName == "All" or filters.professionName == prof.name then
-            if not filters or not filters.onlineOnly or player.online then
-              if not filters or not filters.sharedMatsOnly or hasSharedMats then
-                table.insert(results, {
-                  name = playerName,
-                  online = player.online,
-                  profession = prof.name,
-                  rank = prof.rank,
-                  maxRank = prof.maxRank,
-                  hasSharedMats = hasSharedMats,
-                })
-              end
-            end
-          end
-          break
-        end
-      end
-    end
-  end
-  table.sort(results, function(a, b)
-    if a.online ~= b.online then
-      return a.online
-    end
-    return a.name < b.name
-  end)
-  return results
-end
-
-function SND:HasSharedMatsForRecipe(sharedMats, recipeSpellID)
-  if not sharedMats then
-    return false
-  end
-  local reagents = self:GetRecipeReagents(recipeSpellID)
-  if not reagents then
-    return false
-  end
-  for itemID in pairs(reagents) do
-    if sharedMats[itemID] and sharedMats[itemID] > 0 then
-      return true
-    end
-  end
-  return false
-end
-
-function SND:GetProfessionFilterOptions()
-  local gathering = {
-    ["Mining"] = true,
-    ["Herbalism"] = true,
-    ["Skinning"] = true,
-  }
-  local options = {}
-  local seen = {}
-  for _, option in ipairs(self:GetAllProfessionOptions()) do
-    if not gathering[option] then
-      table.insert(options, option)
-      seen[option] = true
-    end
-  end
-  for _, player in pairs(self.db.players) do
-    if player.professions then
-      for _, prof in pairs(player.professions) do
-        if prof.name and not gathering[prof.name] and not seen[prof.name] then
-          table.insert(options, prof.name)
-          seen[prof.name] = true
-        end
-      end
-    end
-  end
-  return options
-end
+-- ============================================================================
+-- Directory UI Rendering
+-- NOTE: Directory UI functions will be moved to modules/DirectoryUI.lua
+-- ============================================================================
 
 function SND:RenderDirectoryList(directoryFrame, results)
   if not directoryFrame or not directoryFrame.listButtons then
