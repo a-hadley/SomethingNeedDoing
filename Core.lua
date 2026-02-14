@@ -296,6 +296,47 @@ function SND:HandleSlashCommand(input)
     end
     self:Print(string.format("Players in DB: %d | With professions: %d | Total recipes: %d", playerCount, playersWithProfs, totalRecipes))
     self:Print(string.format("RecipeIndex entries: %d", recipeIndexCount))
+
+    -- Comms diagnostics
+    self:Print("--- Comms Diagnostics ---")
+    local guildName = GetGuildInfo and GetGuildInfo("player") or "NONE"
+    local isInGuild = IsInGuild()
+    self:Print(string.format("In Guild: %s | Guild: %s", tostring(isInGuild), tostring(guildName)))
+
+    local cacheCount = 0
+    if self.comms.guildMemberCache then
+      for _ in pairs(self.comms.guildMemberCache) do
+        cacheCount = cacheCount + 1
+      end
+    end
+    self:Print(string.format("Guild member cache: %d members", cacheCount))
+    self:Print(string.format("Combat state: %s", tostring(self.comms.inCombat or false)))
+    self:Print(string.format("Pending combat messages: %d", #(self.comms.pendingCombatMessages or {})))
+    return
+  end
+  if command == "broadcast" then
+    -- Manual broadcast command for testing
+    self:Print("Broadcasting recipe data to guild...")
+    if type(self.SendRecipeIndex) == "function" then
+      self:SendRecipeIndex(true)
+      self:Print("Recipe broadcast sent!")
+    else
+      self:Print("ERROR: SendRecipeIndex function not available")
+    end
+    return
+  end
+  if command == "testguild" then
+    -- Test if we can see guild members
+    local numMembers = GetNumGuildMembers and GetNumGuildMembers() or 0
+    self:Print(string.format("WoW API reports %d guild members", numMembers))
+    if numMembers > 0 then
+      for i = 1, math.min(5, numMembers) do
+        local name = GetGuildRosterInfo(i)
+        local nameOnly = name and strsplit("-", name)
+        local isCached = self.comms.guildMemberCache and self.comms.guildMemberCache[nameOnly] or false
+        self:Print(string.format("  %d: %s (cached: %s)", i, tostring(nameOnly), tostring(isCached)))
+      end
+    end
     return
   end
   self:ToggleMainWindow()

@@ -120,6 +120,12 @@ function SND:InitComms()
   end)
 
   self.comms.ace:RegisterComm(self.comms.prefix, function(prefix, payload, channel, sender)
+    -- Debug: Track message reception
+    local messageType = payload and payload:match("^([^|]+)") or "UNKNOWN"
+    if self.db and self.db.config and self.db.config.debugMode then
+      debugComms(self, string.format("RX: %s from %s on %s", messageType, tostring(sender), tostring(channel)))
+    end
+
     -- Combat protection: queue messages during combat
     if InCombatLockdown() then
       self.comms.inCombat = true
@@ -128,13 +134,22 @@ function SND:InitComms()
         channel = channel,
         sender = sender
       })
+      if self.db and self.db.config and self.db.config.debugMode then
+        debugComms(self, string.format("QUEUED during combat: %s from %s", messageType, tostring(sender)))
+      end
       return
     end
 
     if not self:PassRateLimit(sender) then
+      if self.db and self.db.config and self.db.config.debugMode then
+        debugComms(self, string.format("RATE LIMITED: %s from %s", messageType, tostring(sender)))
+      end
       return
     end
     if not self:IsGuildMember(sender) then
+      if self.db and self.db.config and self.db.config.debugMode then
+        debugComms(self, string.format("NOT GUILD MEMBER: %s from %s", messageType, tostring(sender)))
+      end
       return
     end
     self:HandleAddonMessage(payload, channel, sender)
