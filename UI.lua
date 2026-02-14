@@ -186,7 +186,14 @@ end
 
 function SND:CreateMainWindow()
   local frame = CreateFrame("Frame", "SNDMainFrame", UIParent, "BackdropTemplate")
-  frame:SetSize(MAIN_FRAME_WIDTH, MAIN_FRAME_HEIGHT)
+
+  -- Restore saved size or use defaults
+  local savedWidth = self.db and self.db.config and self.db.config.windowWidth
+  local savedHeight = self.db and self.db.config and self.db.config.windowHeight
+  local width = savedWidth or MAIN_FRAME_WIDTH
+  local height = savedHeight or MAIN_FRAME_HEIGHT
+
+  frame:SetSize(width, height)
   frame:SetPoint("CENTER")
   frame:SetFrameStrata(SND_MAIN_STRATA)
   frame:SetMovable(true)
@@ -228,6 +235,21 @@ function SND:CreateMainWindow()
 
   local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
   close:SetPoint("TOPRIGHT", -6, -6)
+
+  -- Add resize grip
+  local resizeButton = CreateFrame("Button", nil, frame)
+  resizeButton:SetSize(16, 16)
+  resizeButton:SetPoint("BOTTOMRIGHT", -6, 6)
+  resizeButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+  resizeButton:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+  resizeButton:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+  resizeButton:SetScript("OnMouseDown", function()
+    frame:StartSizing("BOTTOMRIGHT")
+  end)
+  resizeButton:SetScript("OnMouseUp", function()
+    frame:StopMovingOrSizing()
+    SND:SaveWindowSize()
+  end)
 
   local tabs = {}
   local tabNames = { T("Directory"), T("Requests"), T("Options"), }
@@ -2692,4 +2714,33 @@ function SND:ShowRequestNotificationPopup(requestId, requestData, sender)
   -- Show popup
   popup:Show()
   popup:Raise()
+end
+
+-- ============================================================================
+-- Window Size Persistence
+-- ============================================================================
+
+--[[
+  SaveWindowSize - Save current window size to database
+
+  Purpose:
+    Persists the current main window dimensions to SavedVariables
+    so they can be restored on next login.
+
+  Side Effects:
+    - Updates self.db.config.windowWidth
+    - Updates self.db.config.windowHeight
+]]--
+function SND:SaveWindowSize()
+  if not self.mainFrame then
+    return
+  end
+
+  local width, height = self.mainFrame:GetSize()
+  if not self.db or not self.db.config then
+    return
+  end
+
+  self.db.config.windowWidth = width
+  self.db.config.windowHeight = height
 end
