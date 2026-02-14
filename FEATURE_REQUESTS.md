@@ -1,8 +1,23 @@
 # Feature Requests - Request Workflow Improvements
 
-**Date**: 2026-02-13
-**Status**: Planning Phase
+**Date**: 2026-02-13 to 2026-02-14
+**Status**: Partially Complete (4/5 features implemented)
 **Priority**: High
+
+---
+
+## Implementation Status
+
+✅ **Feature 1: Delivery Notifications** - Completed 2026-02-14
+✅ **Feature 2: Smart Request Popups** - Completed 2026-02-14
+✅ **Feature 3: Directional Workflow** - Completed 2026-02-14
+❌ **Feature 4: Guild Profession Roster** - Pending
+✅ **Feature 5: Resizable Window** - Completed 2026-02-14
+
+**Additional Improvements:**
+- ✅ Fixed duplicate "All" in profession filter
+- ✅ Fixed real-time request status synchronization
+- ✅ Added advanced directory sorting (A-Z, Z-A, Rarity, Level)
 
 ---
 
@@ -12,7 +27,7 @@ Improve the request workflow to provide clearer state transitions, better notifi
 
 ---
 
-## Feature 1: Delivery Notification to Requestor
+## Feature 1: Delivery Notification to Requestor ✅ COMPLETED
 
 ### Current Behavior
 - Crafter marks request as "delivered"
@@ -46,7 +61,7 @@ self:SendAddonMessage(serialize(message), "WHISPER", requesterName)
 
 ---
 
-## Feature 2: Smart Request Popups with Quick Claim
+## Feature 2: Smart Request Popups with Quick Claim ✅ COMPLETED
 
 ### Current Behavior
 - Popup shows for ALL guild members when request created
@@ -111,7 +126,7 @@ StaticPopupDialogs["SND_NEW_REQUEST_QUICK_CLAIM"] = {
 
 ---
 
-## Feature 3: Directional Workflow & Smart Button States
+## Feature 3: Directional Workflow & Smart Button States ✅ COMPLETED
 
 ### Current Issues
 - Workflow unclear
@@ -376,7 +391,7 @@ Medium - Nice to have, not critical
 
 ---
 
-## Feature 5: Resizable Main Window
+## Feature 5: Resizable Main Window ✅ COMPLETED
 
 ### Current Behavior
 - Main window is fixed size
