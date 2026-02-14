@@ -130,27 +130,13 @@ function SND:ShowZeroRecipesAlert(scanID)
   debugScan(self, string.format("Scanner: zero-recipe alert fired (scan id=%s)", tostring(scanID)))
   self:DebugPrint(T("Scanner: %s", message))
 
+  -- Only show in UI label, no popups
   if self.mainFrame and self.mainFrame.contentFrames then
     local meFrame = self.mainFrame.contentFrames[3]
     if meFrame and meFrame.scanAlertLabel then
       meFrame.scanAlertLabel:SetText(T("Scan Alert: %s", message))
       meFrame.scanAlertLabel:Show()
     end
-  end
-
-  -- Never show popup during combat to avoid interrupting player
-  if StaticPopup_Show and not InCombatLockdown() then
-    if not StaticPopupDialogs["SND_ZERO_RECIPES_FOUND"] then
-      StaticPopupDialogs["SND_ZERO_RECIPES_FOUND"] = {
-        text = T("Something Need Doing") .. "\n\n" .. T("No recipes were found during the latest profession scan."),
-        button1 = OKAY,
-        timeout = 0,
-        whileDead = true,
-        hideOnEscape = true,
-        preferredIndex = 3,
-      }
-    end
-    StaticPopup_Show("SND_ZERO_RECIPES_FOUND")
   end
 end
 

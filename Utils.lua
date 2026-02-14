@@ -29,7 +29,11 @@ function SND:HashString(input)
 end
 
 function SND:DebugPrint(message)
-  self:DebugLog(message, false)
+  -- Only show debug messages when debug mode is enabled
+  if not self:IsDebugModeEnabled() then
+    return
+  end
+  self:DebugLog(message, true)
 end
 
 function SND:IsDebugModeEnabled()

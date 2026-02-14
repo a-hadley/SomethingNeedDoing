@@ -10,7 +10,7 @@ SND.comms = {
   version = 2,
   rate = { window = 5, max = 25 },
   chunkTimeout = 10,
-  fullSyncInterval = 300,
+  fullSyncInterval = 60,  -- Reduced from 300 to 60 seconds for faster updates
 }
 
 local function countTableEntries(tbl)
@@ -161,7 +161,8 @@ function SND:InitComms()
   self.comms.fullSyncTicker = self:ScheduleSNDRepeatingTimer(self.comms.fullSyncInterval, function()
     self:BroadcastFullState("ticker")
   end)
-  self:ScheduleSNDTimer(8, function()
+  -- Reduced startup delay from 8 to 2 seconds for faster initial sync
+  self:ScheduleSNDTimer(2, function()
     self:BroadcastFullState("startup")
   end)
 end
