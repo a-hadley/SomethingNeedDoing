@@ -746,14 +746,16 @@ function SND:SendRequestNew(requestId, request)
   local serialized = self.comms.serializer:Serialize({ id = requestId, data = request })
   local compressed = self.comms.deflate:CompressDeflate(serialized)
   local encoded = self.comms.deflate:EncodeForWoWAddonChannel(compressed)
-  self:SendAddonMessage(string.format("REQ_NEW|%s", encoded))
+  -- Use ALERT priority for instant delivery
+  self:SendAddonMessage(string.format("REQ_NEW|%s", encoded), "ALERT")
 end
 
 function SND:SendRequestUpdate(requestId, request)
   local serialized = self.comms.serializer:Serialize({ id = requestId, data = request })
   local compressed = self.comms.deflate:CompressDeflate(serialized)
   local encoded = self.comms.deflate:EncodeForWoWAddonChannel(compressed)
-  self:SendAddonMessage(string.format("REQ_UPD|%s", encoded))
+  -- Use ALERT priority for instant status updates
+  self:SendAddonMessage(string.format("REQ_UPD|%s", encoded), "ALERT")
 end
 
 --[[
@@ -806,7 +808,8 @@ function SND:SendDeliveryNotification(request, crafterKey)
   local serialized = self.comms.serializer:Serialize(payload)
   local compressed = self.comms.deflate:CompressDeflate(serialized)
   local encoded = self.comms.deflate:EncodeForWoWAddonChannel(compressed)
-  self:SendAddonMessage(string.format("REQ_NOTIFY|%s", encoded))
+  -- Use ALERT priority for instant delivery notifications
+  self:SendAddonMessage(string.format("REQ_NOTIFY|%s", encoded), "ALERT")
 
   -- Show local notification if this is the requester
   local localPlayerKey = self:GetPlayerKey(UnitName("player"))
@@ -863,7 +866,8 @@ function SND:SendRequestDelete(requestId, options)
   local serialized = self.comms.serializer:Serialize({ id = requestId, tombstone = tombstone })
   local compressed = self.comms.deflate:CompressDeflate(serialized)
   local encoded = self.comms.deflate:EncodeForWoWAddonChannel(compressed)
-  self:SendAddonMessage(string.format("REQ_DEL|%s", encoded))
+  -- Use ALERT priority for instant deletion updates
+  self:SendAddonMessage(string.format("REQ_DEL|%s", encoded), "ALERT")
 end
 
 function SND:SendRequestFullState()

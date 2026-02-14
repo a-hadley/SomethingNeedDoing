@@ -281,13 +281,16 @@ function SND:SendProfSummary()
   self:SendAddonMessage(payload)
 end
 
-function SND:SendAddonMessage(payload)
+function SND:SendAddonMessage(payload, priority)
   -- Combat protection: don't send messages during combat
   if InCombatLockdown() then
     debugComms(self, "Comms: message send blocked during combat")
     return
   end
-  self.comms.ace:SendCommMessage(self.comms.prefix, payload, "GUILD")
+  -- Priority: "BULK" (low), "NORMAL" (default), "ALERT" (high/immediate)
+  -- Request messages use "ALERT" to bypass throttling for instant updates
+  local prio = priority or "NORMAL"
+  self.comms.ace:SendCommMessage(self.comms.prefix, payload, "GUILD", nil, prio)
 end
 
 function SND:HandleHello(payload, sender)
