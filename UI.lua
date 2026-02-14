@@ -1281,11 +1281,7 @@ function SND:CreateRequestsTab(parent)
 
   UIDropDownMenu_Initialize(professionDrop, function(dropdown, level)
     local options = SND:GetProfessionFilterOptions()
-    local withAll = { "All" }
     for _, option in ipairs(options or {}) do
-      table.insert(withAll, option)
-    end
-    for _, option in ipairs(withAll) do
       local value = option
       local info = UIDropDownMenu_CreateInfo()
       info.text = value
