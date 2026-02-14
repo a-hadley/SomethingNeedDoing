@@ -310,13 +310,58 @@ REQ_DELIVERED = {
 
 ---
 
-## Questions for User
+## User Decisions (2026-02-13)
 
-1. **Popup style preference**: StaticPopup dialog or custom frame with buttons?
-2. **Delivery notification**: Chat message or popup or both?
-3. **Quick claim shortcut**: Should there be a keybind (e.g., Alt+Click)?
-4. **Unclaim confirmation**: Should there be a confirmation dialog?
-5. **Workflow display**: Show in request details or as a separate help section?
+1. ✅ **Popup style**: Custom frame with buttons
+2. ✅ **Delivery notification**: Chat message only (no popup)
+3. ✅ **Quick claim shortcut**: No Alt+Click (keep it simple)
+4. ✅ **Unclaim confirmation**: Yes, show confirmation dialog
+5. ✅ **Workflow display**: Embedded in request details
+
+---
+
+## Implementation Details
+
+### Custom Request Popup Frame
+```lua
+-- Create custom frame for new request notifications
+local popup = CreateFrame("Frame", "SNDRequestPopup", UIParent, "BackdropTemplate")
+popup:SetSize(350, 140)
+popup:SetPoint("TOP", 0, -200)
+popup:SetFrameStrata("DIALOG")
+
+-- Title: "New Craft Request"
+-- Item icon + name (clickable item link)
+-- Requester name
+-- Two buttons: "Claim & Craft" and "Dismiss"
+-- Auto-hide after 20 seconds
+```
+
+### Unclaim Confirmation Dialog
+```lua
+StaticPopupDialogs["SND_CONFIRM_UNCLAIM"] = {
+  text = "Unclaim this request?\n\nIt will return to the open pool for other crafters.",
+  button1 = "Unclaim",
+  button2 = "Cancel",
+  OnAccept = function(self, requestId)
+    SND:UnclaimRequest(requestId)
+  end,
+  timeout = 0,
+  whileDead = false,
+  hideOnEscape = true,
+}
+```
+
+### Workflow Display in Request Details
+```lua
+-- Add to request detail pane:
+local workflowLabel = CreateFontString(...)
+workflowLabel:SetText([[
+Workflow: OPEN → CLAIMED → CRAFTED → DELIVERED
+Current: CLAIMED (you)
+Next: Mark as Crafted
+]])
+```
 
 ---
 
