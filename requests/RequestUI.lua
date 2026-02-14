@@ -713,6 +713,8 @@ function SND:ClaimSelectedRequest(requestsFrame)
   end
   self:UpdateRequestStatus(requestId, "CLAIMED", self:GetPlayerKey(UnitName("player")))
   self:RefreshRequestList(requestsFrame)
+  -- Immediately refresh detail pane to show updated status and buttons
+  self:SelectRequest(requestsFrame, requestId)
 end
 
 --[[
@@ -742,6 +744,8 @@ function SND:UnclaimSelectedRequest(requestsFrame)
         if data and data.requestId and data.addon and data.requestsFrame then
           data.addon:UpdateRequestStatus(data.requestId, "OPEN", nil)
           data.addon:RefreshRequestList(data.requestsFrame)
+          -- Immediately refresh detail pane to show updated status and buttons
+          data.addon:SelectRequest(data.requestsFrame, data.requestId)
         end
       end,
       timeout = 0,
@@ -774,6 +778,8 @@ function SND:MarkSelectedRequestCrafted(requestsFrame)
   end
   self:UpdateRequestStatus(requestId, "CRAFTED", self.db.requests[requestId] and self.db.requests[requestId].claimedBy)
   self:RefreshRequestList(requestsFrame)
+  -- Immediately refresh detail pane to show updated status and buttons
+  self:SelectRequest(requestsFrame, requestId)
 end
 
 --[[
@@ -793,6 +799,8 @@ function SND:MarkSelectedRequestDelivered(requestsFrame)
   end
   self:UpdateRequestStatus(requestId, "DELIVERED", self.db.requests[requestId] and self.db.requests[requestId].claimedBy)
   self:RefreshRequestList(requestsFrame)
+  -- Immediately refresh detail pane to show updated status and buttons
+  self:SelectRequest(requestsFrame, requestId)
 end
 
 --[[
@@ -872,6 +880,8 @@ function SND:CancelSelectedRequest(requestsFrame)
   end
   if self:CancelRequest(requestId) then
     self:RefreshRequestList(requestsFrame)
+    -- Immediately refresh detail pane to show updated status and buttons
+    self:SelectRequest(requestsFrame, requestId)
   end
 end
 
