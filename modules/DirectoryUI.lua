@@ -124,6 +124,7 @@ function SND:UpdateDirectoryResults(query)
     professionName = directoryFrame.selectedProfession,
     onlineOnly = directoryFrame.onlineOnly,
     sharedMatsOnly = directoryFrame.sharedMatsOnly,
+    hideOwnRecipes = directoryFrame.hideOwnRecipes,
   }
 
   -- Execute search
@@ -136,17 +137,19 @@ function SND:UpdateDirectoryResults(query)
     tostring(filters.professionName),
     tostring(filters.onlineOnly),
     tostring(filters.sharedMatsOnly),
+    tostring(filters.hideOwnRecipes),
     tostring(#results),
     tostring(recipeIndexCount),
   }, "|")
   if self._lastDirectorySummaryLog ~= summaryKey then
     self._lastDirectorySummaryLog = summaryKey
     debugDirectory(self, string.format(
-      "Directory: search update query='%s' profession=%s onlineOnly=%s sharedMatsOnly=%s results=%d recipeIndex=%d",
+      "Directory: search update query='%s' profession=%s onlineOnly=%s sharedMatsOnly=%s hideOwn=%s results=%d recipeIndex=%d",
       tostring(searchQuery),
       tostring(filters.professionName),
       tostring(filters.onlineOnly),
       tostring(filters.sharedMatsOnly),
+      tostring(filters.hideOwnRecipes),
       #results,
       recipeIndexCount
     ))

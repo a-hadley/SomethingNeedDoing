@@ -121,6 +121,7 @@ end
       - professionName (string) - Filter by profession (e.g., "Blacksmithing", "All")
       - onlineOnly (boolean) - Show only online crafters
       - sharedMatsOnly (boolean) - Show only recipes with shared mats available
+      - hideOwnRecipes (boolean) - Hide recipes the local player knows
 
   Returns:
     @return (table) - Array of search results:
@@ -146,15 +147,31 @@ function SND:SearchRecipes(query, filters)
   -- Fast path: empty query returns all recipes
   if cleaned == "" then
     local results = {}
+    local localPlayerKey = filters and filters.hideOwnRecipes and self:GetPlayerKey(UnitName("player")) or nil
+    local localPlayer = localPlayerKey and self.db.players[localPlayerKey] or nil
+
     for recipeSpellID, recipe in pairs(self.db.recipeIndex) do
-      local crafters = self:GetCraftersForRecipe(recipeSpellID, filters)
-      local count = #crafters
-      if count > 0 then
-        table.insert(results, {
-          recipeSpellID = recipeSpellID,
-          name = recipe.name or "",
-          crafterCount = count
-        })
+      -- Skip if hiding own recipes and local player knows this recipe
+      local shouldSkip = false
+      if filters and filters.hideOwnRecipes and localPlayer and localPlayer.professions then
+        for _, prof in pairs(localPlayer.professions) do
+          if prof.recipes and prof.recipes[recipeSpellID] then
+            shouldSkip = true
+            break
+          end
+        end
+      end
+
+      if not shouldSkip then
+        local crafters = self:GetCraftersForRecipe(recipeSpellID, filters)
+        local count = #crafters
+        if count > 0 then
+          table.insert(results, {
+            recipeSpellID = recipeSpellID,
+            name = recipe.name or "",
+            crafterCount = count
+          })
+        end
       end
     end
 
@@ -171,6 +188,9 @@ function SND:SearchRecipes(query, filters)
 
   -- Search mode: match query against recipe name or output item name
   local results = {}
+  local localPlayerKey = filters and filters.hideOwnRecipes and self:GetPlayerKey(UnitName("player")) or nil
+  local localPlayer = localPlayerKey and self.db.players[localPlayerKey] or nil
+
   for recipeSpellID, recipe in pairs(self.db.recipeIndex) do
     local name = recipe.name or ""
     local outputName = self:GetRecipeOutputItemName(recipeSpellID)
@@ -180,14 +200,27 @@ function SND:SearchRecipes(query, filters)
     local outputMatch = outputName and string.find(string.lower(outputName), cleaned, 1, true)
 
     if nameMatch or outputMatch then
-      local crafters = self:GetCraftersForRecipe(recipeSpellID, filters)
-      local count = #crafters
-      if count > 0 then
-        table.insert(results, {
-          recipeSpellID = recipeSpellID,
-          name = name,
-          crafterCount = count
-        })
+      -- Skip if hiding own recipes and local player knows this recipe
+      local shouldSkip = false
+      if filters and filters.hideOwnRecipes and localPlayer and localPlayer.professions then
+        for _, prof in pairs(localPlayer.professions) do
+          if prof.recipes and prof.recipes[recipeSpellID] then
+            shouldSkip = true
+            break
+          end
+        end
+      end
+
+      if not shouldSkip then
+        local crafters = self:GetCraftersForRecipe(recipeSpellID, filters)
+        local count = #crafters
+        if count > 0 then
+          table.insert(results, {
+            recipeSpellID = recipeSpellID,
+            name = name,
+            crafterCount = count
+          })
+        end
       end
     end
   end

@@ -387,6 +387,13 @@ function SND:CreateDirectoryTab(parent)
     SND:UpdateDirectoryResults(searchBox:GetText())
   end)
 
+  local hideOwnBox, hideOwnCheckbox = CreateBoundedCheckbox(filterBar, T("Hide My Recipes"))
+  hideOwnBox:SetPoint("LEFT", matsBox, "RIGHT", 6, 0)
+  hideOwnCheckbox:SetScript("OnClick", function(btn)
+    frame.hideOwnRecipes = btn:GetChecked() and true or false
+    SND:UpdateDirectoryResults(searchBox:GetText())
+  end)
+
   local leftWidth = 290
   local middleWidth = 290
   local columnGap = 10
@@ -780,6 +787,7 @@ function SND:CreateDirectoryTab(parent)
   frame.selectedProfession = "All"
   frame.onlineOnly = false
   frame.sharedMatsOnly = false
+  frame.hideOwnRecipes = false
 
   UIDropDownMenu_Initialize(professionDrop, function(dropdown, level)
     local options = SND:GetProfessionFilterOptions()
