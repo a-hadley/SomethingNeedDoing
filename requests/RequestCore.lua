@@ -482,7 +482,7 @@ function SND:RequestPolicyEvaluateStatusMutation(request, newStatus, actorKey, c
     }
   end
 
-  if newStatus == STATUS_CRAFTED and currentStatus == STATUS_CLAIMED and (isClaimer or isRequester) then
+  if newStatus == STATUS_CRAFTED and currentStatus == STATUS_CLAIMED and isClaimer then
     return {
       allowed = true,
       actionType = MUTATION_ACTION_STATUS_UPDATE,
@@ -493,7 +493,7 @@ function SND:RequestPolicyEvaluateStatusMutation(request, newStatus, actorKey, c
     }
   end
 
-  if newStatus == STATUS_DELIVERED and currentStatus == STATUS_CRAFTED and (isClaimer or isRequester) then
+  if newStatus == STATUS_DELIVERED and currentStatus == STATUS_CRAFTED and isClaimer then
     return {
       allowed = true,
       actionType = MUTATION_ACTION_STATUS_UPDATE,
