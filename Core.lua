@@ -316,8 +316,8 @@ function SND:RefreshMeTab(meFrame)
       table.insert(rxList, { name = msgType, count = count })
     end
     table.sort(rxList, function(a, b) return a.count > b.count end)
-    for _, entry in ipairs(rxList) do
-      table.insert(lines, string.format("  %s: %d", entry.name, entry.count))
+    for _, rx in ipairs(rxList) do
+      table.insert(lines, string.format("  %s: %d", rx.name, rx.count))
     end
     -- Sent stats
     table.insert(lines, string.format("Sent: %d total", cs.totalSent))
@@ -326,8 +326,8 @@ function SND:RefreshMeTab(meFrame)
       table.insert(txList, { name = msgType, count = count })
     end
     table.sort(txList, function(a, b) return a.count > b.count end)
-    for _, entry in ipairs(txList) do
-      table.insert(lines, string.format("  %s: %d", entry.name, entry.count))
+    for _, tx in ipairs(txList) do
+      table.insert(lines, string.format("  %s: %d", tx.name, tx.count))
     end
     -- Status counters
     table.insert(lines, string.format("Rate limited: %d  |  Non-guild: %d  |  Errors: %d",

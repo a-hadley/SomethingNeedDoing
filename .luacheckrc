@@ -6,9 +6,12 @@ exclude_files = {
   "dist/",
 }
 
+-- Allow writing to _G (addon pattern: _G[addonName] = SND, then SND:Method())
 globals = {
+  "_G",
   "SomethingNeedDoing",
   "SomethingNeedDoingDB",
+  "StaticPopupDialogs",
 }
 
 read_globals = {
@@ -22,25 +25,57 @@ read_globals = {
   "tremove",
   "format",
 
-  -- WoW API
+  -- WoW API: General
   "CreateFrame",
   "GetAddOnMetadata",
-  "GetGuildInfo",
-  "GetGuildRosterInfo",
-  "GetNumGuildMembers",
-  "GetItemInfo",
-  "GetItemIcon",
-  "GetProfessions",
-  "GetProfessionInfo",
   "GetRealmName",
   "GetServerTime",
   "GetSpellLink",
-  "IsInGuild",
+  "GetSpellInfo",
+  "GetItemInfo",
+  "GetItemIcon",
+  "GetItemCount",
+  "InCombatLockdown",
   "UnitFactionGroup",
   "UnitIsGuildLeader",
   "UnitName",
+  "UnitGUID",
   "ChatFrame_OpenChat",
   "ChatFrame_SendTell",
+  "HandleModifiedItemClick",
+
+  -- WoW API: Guild
+  "IsInGuild",
+  "GetGuildInfo",
+  "GetGuildRosterInfo",
+  "GetNumGuildMembers",
+  "GuildRoster",
+
+  -- WoW API: Professions
+  "GetProfessions",
+  "GetProfessionInfo",
+
+  -- WoW API: Classic TradeSkill
+  "GetTradeSkillLine",
+  "GetNumTradeSkills",
+  "GetTradeSkillInfo",
+  "GetTradeSkillRecipeLink",
+  "GetTradeSkillItemLink",
+  "GetTradeSkillNumReagents",
+  "GetTradeSkillReagentInfo",
+  "GetTradeSkillReagentItemLink",
+  "GetTradeSkillTools",
+  "ExpandTradeSkillSubClass",
+  "CloseTradeSkill",
+
+  -- WoW API: Classic Craft (enchanting, etc.)
+  "GetNumCrafts",
+  "GetCraftInfo",
+  "GetCraftItemLink",
+  "GetCraftReagentInfo",
+  "GetCraftReagentItemLink",
+  "GetCraftDisplaySkillLine",
+  "GetCraftSpellFocus",
 
   -- C_ namespaces
   "C_AddOns",
@@ -48,22 +83,43 @@ read_globals = {
   "C_Timer",
   "C_TradeSkillUI",
 
-  -- UI globals
+  -- UI framework
   "UIParent",
   "GameTooltip",
   "DEFAULT_CHAT_FRAME",
   "BackdropTemplateMixin",
-  "ITEM_QUALITY_COLORS",
-
-  -- Templates (used as inherits in CreateFrame)
   "BackdropTemplate",
+  "ITEM_QUALITY_COLORS",
+  "ChatFontNormal",
+  "UISpecialFrames",
+  "StaticPopup_Show",
+
+  -- UIDropDownMenu
+  "UIDropDownMenu_Initialize",
+  "UIDropDownMenu_CreateInfo",
+  "UIDropDownMenu_SetText",
+  "UIDropDownMenu_SetWidth",
+  "UIDropDownMenu_AddButton",
+  "CloseDropDownMenus",
+
+  -- Panel templates
+  "PanelTemplates_SetNumTabs",
+  "PanelTemplates_SetTab",
 
   -- Libraries
   "LibStub",
 
-  -- Addon loader
-  "_G",
+  -- Optional addon APIs (checked at runtime before use)
+  "Auctionator",
+  "Atr_GetAuctionBuyout",
+  "TSM_API",
 }
 
 -- Ignore unused self in methods (common in Ace3 callbacks)
 self = false
+
+-- Ignore unused arguments prefixed with _ or common callback args
+ignore = {
+  "21./_.*",       -- unused arguments starting with _
+  "212",           -- unused argument (applies to known callback patterns)
+}

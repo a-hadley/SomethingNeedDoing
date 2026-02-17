@@ -102,7 +102,7 @@ function SND:ScanGuildRoster()
   local localPlayerKey = self:GetPlayerKey(UnitName("player"))
   local localGuildMasterStatus = type(UnitIsGuildLeader) == "function" and UnitIsGuildLeader("player") and true or false
   for index = 1, numMembers do
-    local name, rankName, rankIndex, _, _, _, _, _, online, _, classFilename = GetGuildRosterInfo(index)
+    local name, _rankName, rankIndex, _, _, _, _, _, online, _, classFilename = GetGuildRosterInfo(index)
     if name then
       local nameOnly = strsplit("-", name)
       local playerKey = self:GetPlayerKey(nameOnly)

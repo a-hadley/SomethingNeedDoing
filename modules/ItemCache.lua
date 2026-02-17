@@ -231,7 +231,7 @@ function SND:ProcessItemCacheBatch()
       processed = processed + 1
 
       -- Try to get item info from WoW API
-      local name, link, quality, iLevel, reqLevel, class, subclass, maxStack, equipSlot, texture, vendorPrice = GetItemInfo(itemID)
+      local name, link = GetItemInfo(itemID)
       local icon = GetItemIcon(itemID)
 
       if name and icon then

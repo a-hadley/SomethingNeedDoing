@@ -1284,9 +1284,9 @@ end
 function SND:HandleRecipeChunk(payload, sender)
   -- Try RCP_FULL first (longer pattern), then fall back to RCP
   -- Note: Lua patterns don't support | alternation like regex
-  local _, _, kind, version, senderName, msgId, seq, total, chunk = string.find(payload, "^(RCP_FULL)%|(.-)%|(.-)%|(.-)%|(.-)/(.-)%|(.*)$")
+  local _, _, kind, _, _, msgId, seq, total, chunk = string.find(payload, "^(RCP_FULL)%|(.-)%|(.-)%|(.-)%|(.-)/(.-)%|(.*)$")
   if not kind then
-    _, _, kind, version, senderName, msgId, seq, total, chunk = string.find(payload, "^(RCP)%|(.-)%|(.-)%|(.-)%|(.-)/(.-)%|(.*)$")
+    _, _, kind, _, _, msgId, seq, total, chunk = string.find(payload, "^(RCP)%|(.-)%|(.-)%|(.-)%|(.-)/(.-)%|(.*)$")
   end
 
   if not msgId then

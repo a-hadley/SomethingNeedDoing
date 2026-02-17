@@ -1,6 +1,6 @@
 --[[
 ================================================================================
-RequestUI Module  
+RequestUI Module
 ================================================================================
 Manages the Requests tab UI and request lifecycle interactions.
 
@@ -474,8 +474,8 @@ end
 ]]--
 function SND:UpdateRequestActionButtons(requestsFrame, request)
   local playerKey = self:GetPlayerKey(UnitName("player"))
-  local isRequester = request.requester == playerKey
-  local isClaimer = request.claimedBy == playerKey
+  local _isRequester = request.requester == playerKey
+  local _isClaimer = request.claimedBy == playerKey
   local canEdit = self:CanEditRequest(request)
   local canCancel = self:CanCancelRequest(request)
   local canDelete = self:CanDeleteRequest(request)

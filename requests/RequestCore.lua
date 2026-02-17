@@ -446,7 +446,6 @@ function SND:RequestPolicyEvaluateStatusMutation(request, newStatus, actorKey, c
 
   local policyActorKey = self:ResolveRequestPolicyActorKey(actorKey)
   local currentStatus = request.status
-  local isRequester = request.requester == policyActorKey
   local isClaimer = request.claimedBy == policyActorKey
   local isModerator = self:RequestPolicyIsModerator(policyActorKey)
   local source = type(options) == "table" and options.source or "local"
@@ -741,8 +740,7 @@ function SND:SnapshotMats(recipeSpellID, qty)
     return snapshot
   end
 
-  for itemID, count in pairs(reagents) do
-    local required = count * qty
+  for itemID, _count in pairs(reagents) do
     local have = GetItemCount(itemID, true)
     snapshot[itemID] = have
   end
@@ -771,7 +769,7 @@ function SND:GetRecipeReagents(recipeSpellID)
   if recipeEntry and recipeEntry.reagents then
     return recipeEntry.reagents
   end
-  
+
   -- Try to fetch from API if not cached
   if not C_TradeSkillUI or type(C_TradeSkillUI.GetRecipeSchematic) ~= "function" then
     return nil

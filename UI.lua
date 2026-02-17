@@ -515,13 +515,10 @@ function SND:CreateDirectoryTab(parent)
   local nameColumnWidth = 74
   local statusColumnWidth = 48
   local matsColumnWidth = 26
-  local actionColumnWidth = 26
   local columnNameX = 4
   local columnStatusX = columnNameX + nameColumnWidth + columnGap
   local columnMatsX = columnStatusX + statusColumnWidth + columnGap
   local ColumnActionsX = columnMatsX + matsColumnWidth + columnGap
-  local actionRightPadding = 6
-  local actionButtonGap = 4
   local whisperButtonWidth = 64
   local requestButtonWidth = 64
   -- Scroll child width will be set dynamically based on parent
@@ -1373,7 +1370,7 @@ function SND:CreateRequestsTab(parent)
   frame.unclaimButton = unclaimButton
   frame.craftedButton = craftedButton
   frame.deliveredButton = deliveredButton
-  frame.editButton = editButton
+  frame.editButton = nil
   frame.cancelButton = cancelButton
   frame.deleteButton = deleteButton
   frame.saveNotesButton = saveNotesButton
@@ -2678,8 +2675,8 @@ function SND:ShowRequestModalForRecipe(recipeSpellID, prefill)
     self.requestModal.SetSelectedRecipe(recipeSpellID, resolvedPrefill.recipeName, resolvedPrefill)
   else
     self.requestModal.selectedRecipeSpellID = recipeSpellID
-    local recipe = self.db.recipeIndex[recipeSpellID]
-    self.requestModal.selectedRecipeLabel:SetText((recipe and recipe.name) or ("Recipe " .. recipeSpellID))
+    local recipeEntry = self.db.recipeIndex[recipeSpellID]
+    self.requestModal.selectedRecipeLabel:SetText((recipeEntry and recipeEntry.name) or ("Recipe " .. recipeSpellID))
     self.requestModal.selectedRecipePrefill = resolvedPrefill
     self.requestModal.prefillOwnedCounts = resolvedPrefill.ownedCounts
   end
@@ -2789,20 +2786,20 @@ function SND:CreateRequestPopup()
 
   -- Auto-hide timer
   popup.autoHideTime = 20
-  popup:SetScript("OnUpdate", function(self, elapsed)
-    if not self:IsShown() then
+  popup:SetScript("OnUpdate", function(frame, elapsed)
+    if not frame:IsShown() then
       return
     end
 
-    self.autoHideTime = self.autoHideTime - elapsed
-    if self.autoHideTime <= 0 then
-      self:Hide()
+    frame.autoHideTime = frame.autoHideTime - elapsed
+    if frame.autoHideTime <= 0 then
+      frame:Hide()
     end
   end)
 
   -- Reset timer on show
-  popup:SetScript("OnShow", function(self)
-    self.autoHideTime = 20
+  popup:SetScript("OnShow", function(frame)
+    frame.autoHideTime = 20
   end)
 
   self.requestPopup = popup

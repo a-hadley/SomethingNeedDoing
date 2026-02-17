@@ -206,10 +206,11 @@ function SND:FinalizeScanRun(reason)
   end
   local totalRecipes = tonumber(self.scanner.activeScanRecipesFound) or 0
   debugScan(self, string.format("Scanner: scan run end id=%s reason=%s totalRecipes=%d", tostring(scanID), tostring(reason), totalRecipes))
-  if totalRecipes == 0 and not self.scanner.activeScanAlertShown then
-    --self.scanner.activeScanAlertShown = true
-    --self:ShowZeroRecipesAlert(scanID)
-  end
+  -- TODO: re-enable zero-recipe alert when ready
+  -- if totalRecipes == 0 and not self.scanner.activeScanAlertShown then
+  --   self.scanner.activeScanAlertShown = true
+  --   self:ShowZeroRecipesAlert(scanID)
+  -- end
   self.scanner.activeScanID = nil
   self.scanner.activeScanRecipesFound = 0
   self.scanner.activeScanAlertShown = false
@@ -492,7 +493,7 @@ function SND:ScanProfessions(trigger)
   -- The scan is the authoritative source for the local player's recipes.
   profEntry.recipes = {}
 
-  local foundCount = 0
+  local foundCount
   if C_TradeSkillUI and C_TradeSkillUI.IsTradeSkillReady and currentSkillLineID then
     local ready = C_TradeSkillUI.IsTradeSkillReady(currentSkillLineID)
     debugScan(self, string.format("Scanner: trade skill ready=%s for %s skillLineID=%s", tostring(ready), tostring(tradeSkillLine), tostring(currentSkillLineID)))
@@ -704,35 +705,35 @@ function SND:ScanRecipesForSkillLine(skillLineID, profEntry)
     if recipeIDs then
       local totalCount = countTableEntries(recipeIDs)
       debugScan(self, string.format("Scanner: recipe scan start skillLineID=%s (arrayCount=%d totalCount=%d)", tostring(skillLineID), #recipeIDs, totalCount))
-      
+
       -- Phase 1: Collect recipe metadata
       local recipeMetadata = {}
       local foundCount = 0
       for _, recipeSpellID in pairs(recipeIDs) do
         if type(recipeSpellID) == "number" then
           profEntry.recipes[recipeSpellID] = true
-          
+
           -- Collect schematic data for modern recipes
           local schematic = nil
           if C_TradeSkillUI and C_TradeSkillUI.GetRecipeSchematic then
             schematic = C_TradeSkillUI.GetRecipeSchematic(recipeSpellID, false)
           end
-          
+
           recipeMetadata[recipeSpellID] = {
             schematic = schematic,
             skillLineID = skillLineID
           }
-          
+
           foundCount = foundCount + 1
         end
       end
-      
+
       -- Phase 2: Extract reagents and output items
       local itemsToWarm = {}
       for recipeSpellID, metadata in pairs(recipeMetadata) do
         local reagents = nil
         local outputItemID = nil
-        
+
         if metadata.schematic then
           -- Extract reagents
           if metadata.schematic.reagentSlotSchematics then
@@ -751,14 +752,14 @@ function SND:ScanRecipesForSkillLine(skillLineID, profEntry)
               reagents = nil
             end
           end
-          
+
           -- Extract output item
           outputItemID = metadata.schematic.outputItemID
           if outputItemID then
             table.insert(itemsToWarm, outputItemID)
           end
         end
-        
+
         -- Store in recipeIndex with reagent data
         self:EnsureRecipeIndexEntry(
           recipeSpellID,
@@ -767,7 +768,7 @@ function SND:ScanRecipesForSkillLine(skillLineID, profEntry)
           { reagents = reagents }  -- Pass as modernMeta
         )
       end
-      
+
       -- Phase 3: Warm item cache for all collected items
       if #itemsToWarm > 0 then
         self:WarmItemCache(itemsToWarm, nil, function()
@@ -776,7 +777,7 @@ function SND:ScanRecipesForSkillLine(skillLineID, profEntry)
         end)
         debugScan(self, string.format("Scanner: queued %d items for cache warming", #itemsToWarm))
       end
-      
+
       debugScan(self, string.format("Scanner: recipe scan end skillLineID=%s (foundCount=%d)", tostring(skillLineID), foundCount))
       return foundCount
     end
@@ -1202,12 +1203,12 @@ function SND:EnsureRecipeIndexEntry(recipeSpellID, skillLineID, outputItemID, me
     tools = metaTools,
     rowIndex = metaRowIndex,
     classicFallback = metaFallback and true or nil,
-    
+
     -- NEW: Track item data status
     itemDataStatus = outputItemID and "pending" or nil,
     itemName = nil,  -- Filled by GET_ITEM_INFO_RECEIVED
     itemIcon = nil,  -- Filled by GET_ITEM_INFO_RECEIVED
-    
+
     version = 1,
     updatedAtServer = now,
     updatedBy = updatedBy,
@@ -1300,7 +1301,7 @@ function SND:SnapshotSharedMats()
   self.scanner.lastSharedMatsSnapshotTruncatedCount = 0
   self.scanner.lastSharedMatsSnapshotTotalCandidates = 0
 
-  for recipeSpellID, entry in pairs(self.db.recipeIndex) do
+  for _, entry in pairs(self.db.recipeIndex) do
     local reagents = entry.reagents
     if reagents then
       for itemID in pairs(reagents) do
