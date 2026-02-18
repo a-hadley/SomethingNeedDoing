@@ -105,6 +105,25 @@ function SND:InitDB()
   self:EnsureGuildScope()
   self:MigrateRecipeIndexToPlayerProfessions()
   self:CleanInvalidRecipes()
+
+  -- Strip top-level alias fields before WoW serializes saved variables.
+  -- EnsureGuildScope() creates aliases (db.players = bucket.players etc.) so the
+  -- rest of the codebase can use self.db.players directly. In memory these are the
+  -- same table, but WoW's serializer writes both paths independently, doubling the
+  -- file size. Nil them out before save; EnsureGuildScope() recreates them on load.
+  self.dbRoot.RegisterCallback(self, "OnDatabaseShutdown", "OnDatabaseShutdown")
+end
+
+function SND:OnDatabaseShutdown()
+  local db = self.dbRoot and self.dbRoot.profile
+  if not db then
+    return
+  end
+  db.players = nil
+  db.recipeIndex = nil
+  db.requests = nil
+  db.requestTombstones = nil
+  db.craftLog = nil
 end
 
 function SND:ResetDB()

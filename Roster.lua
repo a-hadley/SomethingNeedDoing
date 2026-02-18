@@ -130,6 +130,7 @@ function SND:ScanGuildRoster()
     if not memberSet[nameOnly] and playerKey ~= localPlayerKey then
       if not entry.leftGuildAt then
         entry.leftGuildAt = self:Now()
+        entry.online = false
       elseif entry.leftGuildAt < leftGuildCutoff then
         self.db.players[playerKey] = nil
       end

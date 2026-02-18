@@ -200,7 +200,9 @@ function SND:InitComms()
       local endIndex = math.min(index + batchSize - 1, #allMessages)
       for i = index, endIndex do
         local msgData = allMessages[i]
-        selfRef:HandleAddonMessage(msgData.payload, msgData.channel, msgData.sender)
+        if selfRef:IsGuildMember(msgData.sender) then
+          selfRef:HandleAddonMessage(msgData.payload, msgData.channel, msgData.sender)
+        end
       end
       index = endIndex + 1
       if index <= #allMessages then
