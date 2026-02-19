@@ -108,23 +108,41 @@ function SND:CreateStatsTab(parent)
   leaderScrollFrame:SetScrollChild(leaderScrollChild)
 
   -- Column headers
+  local colRankW = 26
+  local colNameW = 120
+  local colCountW = 55
+  local colProfW = 110
+  local colItemW = 160
+
   local rankHeader = leaderScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   rankHeader:SetPoint("TOPLEFT", 4, 0)
-  rankHeader:SetWidth(30)
+  rankHeader:SetWidth(colRankW)
   rankHeader:SetJustifyH("LEFT")
   rankHeader:SetText("#")
 
   local nameHeader = leaderScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   nameHeader:SetPoint("LEFT", rankHeader, "RIGHT", 4, 0)
-  nameHeader:SetWidth(200)
+  nameHeader:SetWidth(colNameW)
   nameHeader:SetJustifyH("LEFT")
   nameHeader:SetText("Crafter")
 
   local countHeader = leaderScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   countHeader:SetPoint("LEFT", nameHeader, "RIGHT", 4, 0)
-  countHeader:SetWidth(80)
+  countHeader:SetWidth(colCountW)
   countHeader:SetJustifyH("RIGHT")
   countHeader:SetText("Crafts")
+
+  local profHeader = leaderScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  profHeader:SetPoint("LEFT", countHeader, "RIGHT", 4, 0)
+  profHeader:SetWidth(colProfW)
+  profHeader:SetJustifyH("LEFT")
+  profHeader:SetText("Top Prof")
+
+  local leaderItemHeader = leaderScrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  leaderItemHeader:SetPoint("LEFT", profHeader, "RIGHT", 4, 0)
+  leaderItemHeader:SetWidth(colItemW)
+  leaderItemHeader:SetJustifyH("LEFT")
+  leaderItemHeader:SetText("Top Item")
 
   -- Leaderboard rows
   local leaderRows = {}
@@ -137,22 +155,34 @@ function SND:CreateStatsTab(parent)
 
     local rankText = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     rankText:SetPoint("LEFT", 4, 0)
-    rankText:SetWidth(30)
+    rankText:SetWidth(colRankW)
     rankText:SetJustifyH("LEFT")
 
     local nameText = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     nameText:SetPoint("LEFT", rankText, "RIGHT", 4, 0)
-    nameText:SetWidth(200)
+    nameText:SetWidth(colNameW)
     nameText:SetJustifyH("LEFT")
 
     local countText = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     countText:SetPoint("LEFT", nameText, "RIGHT", 4, 0)
-    countText:SetWidth(80)
+    countText:SetWidth(colCountW)
     countText:SetJustifyH("RIGHT")
+
+    local profText = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    profText:SetPoint("LEFT", countText, "RIGHT", 4, 0)
+    profText:SetWidth(colProfW)
+    profText:SetJustifyH("LEFT")
+
+    local rowItemText = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    rowItemText:SetPoint("LEFT", profText, "RIGHT", 4, 0)
+    rowItemText:SetWidth(colItemW)
+    rowItemText:SetJustifyH("LEFT")
 
     row.rankText = rankText
     row.nameText = nameText
     row.countText = countText
+    row.profText = profText
+    row.rowItemText = rowItemText
     row:Hide()
     leaderRows[i] = row
   end
@@ -362,22 +392,30 @@ function SND:RefreshStatsLeaderboard(statsFrame)
       row.rankText:SetText(tostring(entry.rank))
       row.nameText:SetText(entry.name)
       row.countText:SetText(tostring(entry.count))
+      row.profText:SetText(entry.topProfession or "-")
+      row.rowItemText:SetText(entry.topItem or "-")
 
       -- Highlight current player
       if entry.playerKey == playerKey then
         row.nameText:SetTextColor(0.2, 1.0, 0.2)
         row.rankText:SetTextColor(0.2, 1.0, 0.2)
         row.countText:SetTextColor(0.2, 1.0, 0.2)
+        row.profText:SetTextColor(0.2, 1.0, 0.2)
+        row.rowItemText:SetTextColor(0.2, 1.0, 0.2)
       else
         row.nameText:SetTextColor(1, 1, 1)
         row.rankText:SetTextColor(1, 1, 1)
         row.countText:SetTextColor(1, 1, 1)
+        row.profText:SetTextColor(1, 1, 1)
+        row.rowItemText:SetTextColor(1, 1, 1)
       end
       row:Show()
     else
       row.rankText:SetText("")
       row.nameText:SetText("")
       row.countText:SetText("")
+      row.profText:SetText("")
+      row.rowItemText:SetText("")
       row:Hide()
     end
   end

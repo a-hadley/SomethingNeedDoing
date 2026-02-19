@@ -1137,7 +1137,7 @@ function SND:CreateRequestsTab(parent)
   detailInfo:Hide()
 
   local notesTitle = detailContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  notesTitle:SetPoint("TOPLEFT", detailInfo, "BOTTOMLEFT", 0, -8)
+  notesTitle:SetPoint("TOPLEFT", detailItemButton, "BOTTOMLEFT", 0, -6)
   notesTitle:SetPoint("RIGHT", -4, 0)
   notesTitle:SetJustifyH("LEFT")
   notesTitle:SetText("Notes")

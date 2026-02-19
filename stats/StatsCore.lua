@@ -32,7 +32,7 @@ function SND:RecordCraftLogEntry(requestId, request)
     itemID = request.itemID or self:GetRecipeOutputItemID(request.recipeSpellID),
     qty = request.qty or 1,
     professionSkillLineID = recipe and recipe.professionSkillLineID or nil,
-    professionName = recipe and (recipe.professionName or recipe.profession) or nil,
+    professionName = recipe and (recipe.professionName or recipe.profession or self:GetProfessionNameBySkillLineID(recipe.professionSkillLineID)) or nil,
     crafter = request.claimedBy or request.updatedBy,
     requester = request.requester,
     deliveredAt = request.updatedAt or now,
@@ -186,7 +186,9 @@ function SND:RebuildStatsCache()
       local playerKey = entry.crafter
       local qty = tonumber(entry.qty) or 1
       local deliveredAt = tonumber(entry.deliveredAt) or 0
-      local profKey = entry.professionName or "Unknown"
+      local profKey = entry.professionName
+          or (entry.professionSkillLineID and self:GetProfessionNameBySkillLineID(entry.professionSkillLineID))
+          or "Unknown"
 
       if not byPlayer[playerKey] then
         byPlayer[playerKey] = {
@@ -194,6 +196,7 @@ function SND:RebuildStatsCache()
           weekly = 0,
           monthly = 0,
           byProfession = {},
+          byItem = {},
         }
       end
 
@@ -216,6 +219,22 @@ function SND:RebuildStatsCache()
       end
       if deliveredAt >= monthAgo then
         profStats.monthly = profStats.monthly + qty
+      end
+
+      -- Track per-item counts
+      local itemKey = entry.recipeSpellID
+      if itemKey then
+        if not stats.byItem[itemKey] then
+          stats.byItem[itemKey] = { total = 0, weekly = 0, monthly = 0 }
+        end
+        local itemStats = stats.byItem[itemKey]
+        itemStats.total = itemStats.total + qty
+        if deliveredAt >= weekAgo then
+          itemStats.weekly = itemStats.weekly + qty
+        end
+        if deliveredAt >= monthAgo then
+          itemStats.monthly = itemStats.monthly + qty
+        end
       end
     end
   end
@@ -257,10 +276,38 @@ function SND:GetLeaderboard(period, professionFilter)
 
     if count > 0 then
       local shortName = playerKey:match("^([^%-]+)") or playerKey
+
+      -- Find top profession for this player in the selected period
+      local topProf, topProfCount = nil, 0
+      for profName, profStats in pairs(stats.byProfession) do
+        local profCount = profStats[period] or 0
+        if profCount > topProfCount then
+          topProf = profName
+          topProfCount = profCount
+        end
+      end
+
+      -- Find top item for this player in the selected period
+      local topItemKey, topItemCount = nil, 0
+      for itemKey, itemStats in pairs(stats.byItem or {}) do
+        local itemCount = itemStats[period] or 0
+        if itemCount > topItemCount then
+          topItemKey = itemKey
+          topItemCount = itemCount
+        end
+      end
+
+      local topItemName = nil
+      if topItemKey then
+        topItemName = self:GetRecipeOutputItemName(topItemKey) or "Unknown"
+      end
+
       table.insert(results, {
         playerKey = playerKey,
         name = shortName,
         count = count,
+        topProfession = topProf,
+        topItem = topItemName,
       })
     end
   end
@@ -316,7 +363,10 @@ function SND:GetCraftHistory(filters)
       end
 
       if professionFilter and professionFilter ~= "All" then
-        if (entry.professionName or "Unknown") ~= professionFilter then
+        local entryProfName = entry.professionName
+            or (entry.professionSkillLineID and self:GetProfessionNameBySkillLineID(entry.professionSkillLineID))
+            or "Unknown"
+        if entryProfName ~= professionFilter then
           matches = false
         end
       end
