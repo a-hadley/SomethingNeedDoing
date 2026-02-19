@@ -917,10 +917,7 @@ function SND:DeleteRequest(requestId, reason, source)
   if not self:CanDeleteRequest(request) then
     return false
   end
-  local normalizedReason = normalizeModerationReason(reason)
-  if not normalizedReason then
-    return false
-  end
+  local normalizedReason = normalizeModerationReason(reason) or "Moderator delete"
   self:SendRequestDelete(requestId, {
     reason = normalizedReason,
     source = source or "local",

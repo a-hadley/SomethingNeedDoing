@@ -1012,14 +1012,19 @@ function SND:DeleteSelectedRequest(requestsFrame)
           popup.editBox:HighlightText()
         end
       end,
-      OnAccept = function(popup)
-        local reason = popup and popup.editBox and popup.editBox:GetText() or ""
-        if SND:DeleteRequest(requestId, reason, "ui") then
-          SND:RefreshRequestList(requestsFrame)
+      OnAccept = function(popup, data)
+        if not data or not data.requestId or not data.addon or not data.requestsFrame then return end
+        local reason = popup.editBox and popup.editBox:GetText() or ""
+        if data.addon:DeleteRequest(data.requestId, reason, "ui") then
+          data.addon:RefreshRequestList(data.requestsFrame)
         end
       end,
     }
   end
 
-  StaticPopup_Show("SND_DELETE_REQUEST_REASON")
+  StaticPopup_Show("SND_DELETE_REQUEST_REASON", nil, nil, {
+    requestId = requestId,
+    addon = self,
+    requestsFrame = requestsFrame,
+  })
 end

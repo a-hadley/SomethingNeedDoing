@@ -432,7 +432,7 @@ function SND:CreateDirectoryTab(parent)
   listContainer:SetPoint("TOPLEFT", filterBar, "BOTTOMLEFT", 0, -8)
   listContainer:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 8, 12)
   -- Use relative positioning: ~26% of default width (330px at 1280px default)
-  listContainer:SetPoint("RIGHT", frame, "LEFT", 300, 0)
+  listContainer:SetPoint("RIGHT", frame, "LEFT", 295, 0)
   listContainer:SetBackdrop({
     bgFile = "Interface/Tooltips/UI-Tooltip-Background",
     edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
@@ -938,7 +938,7 @@ function SND:CreateRequestsTab(parent)
 
   -- View mode dropdown (replaces old "My Requests" checkbox)
   local viewLabel = filterBar:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  viewLabel:SetPoint("TOPLEFT", professionLabel, "TOPRIGHT", 140, 0)
+  viewLabel:SetPoint("TOPLEFT", professionLabel, "TOPRIGHT", 80, 0)
   viewLabel:SetText("View")
 
   local viewDrop = CreateFrame("Frame", "SNDRequestViewDropDown", filterBar, "UIDropDownMenuTemplate")
@@ -1747,7 +1747,7 @@ function SND:CreateRequestModal()
     edgeSize = 16,
     insets = { left = 4, right = 4, top = 4, bottom = 4 },
   })
-  modal:SetBackdropColor(0.08, 0.08, 0.1, 1)
+  modal:SetBackdropColor(0.1, 0.1, 0.1, 1)
   modal:EnableMouse(true)
   modal:SetMovable(true)
   modal:RegisterForDrag("LeftButton")
@@ -2269,7 +2269,7 @@ function SND:CreateRequestModal()
   local searchSection = CreateFrame("Frame", nil, modal)
   searchSection:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
   searchSection:SetPoint("TOPRIGHT", modal, "TOPRIGHT", -16, -40)
-  searchSection:SetHeight(160)
+  searchSection:SetHeight(48)
 
   local searchLabel = modal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
   searchLabel:SetPoint("TOPLEFT", searchSection, "TOPLEFT", 0, 0)
@@ -2346,14 +2346,14 @@ function SND:CreateRequestModal()
   pageLabel:SetPoint("LEFT", nextPage, "RIGHT", 6, 0)
   pageLabel:SetText("Page 1/1")
 
-  local targetHeader = modal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  local targetHeader = modal:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
   targetHeader:SetPoint("TOPLEFT", searchSection, "BOTTOMLEFT", 0, -8)
-  targetHeader:SetText("1) Target Summary")
+  targetHeader:SetText("Requested Item")
 
   local targetSection = CreateFrame("Frame", nil, modal, "BackdropTemplate")
   targetSection:SetPoint("TOPLEFT", targetHeader, "BOTTOMLEFT", -4, -4)
   targetSection:SetPoint("TOPRIGHT", modal, "TOPRIGHT", -16, 0)
-  targetSection:SetHeight(96)
+  targetSection:SetHeight(72)
   targetSection:SetBackdrop({
     bgFile = "Interface/ChatFrame/ChatFrameBackground",
     edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
@@ -2402,18 +2402,22 @@ function SND:CreateRequestModal()
   selectedItemIcon:SetSize(32, 32)
   selectedItemIcon:SetPoint("LEFT", selectedItemValue, "LEFT", 0, 0)
   selectedItemIcon:SetTexture("Interface/Icons/INV_Misc_QuestionMark")
-  local selectedItemValueText = selectedItemValue:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+  local selectedItemValueText = selectedItemValue:CreateFontString(nil, "OVERLAY", "GameFontNormalLargeOutline")
   selectedItemValueText:SetPoint("LEFT", selectedItemIcon, "RIGHT", 6, 0)
   selectedItemValueText:SetPoint("RIGHT", selectedItemValue, "RIGHT", 0, 0)
   selectedItemValueText:SetJustifyH("LEFT")
   selectedItemValueText:SetText("-")
 
-  local selectedCrafterLabel = modal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  selectedCrafterLabel:SetPoint("TOPLEFT", selectedItemValue, "BOTTOMLEFT", 0, -8)
+  local inputHeader = modal:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+  inputHeader:SetPoint("TOPLEFT", targetSection, "BOTTOMLEFT", 0, -8)
+  inputHeader:SetText("Request Details")
+
+  local selectedCrafterLabel = modal:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  selectedCrafterLabel:SetPoint("TOPLEFT", inputHeader, "BOTTOMLEFT", 4, -12)
   selectedCrafterLabel:SetText("Crafter")
 
   local selectedCrafterDrop = CreateFrame("Frame", "SNDRequestCrafterDropDown", modal, "UIDropDownMenuTemplate")
-  selectedCrafterDrop:SetPoint("TOPLEFT", selectedCrafterLabel, "BOTTOMLEFT", -18, 2)
+  selectedCrafterDrop:SetPoint("LEFT", selectedCrafterLabel, "RIGHT", 4, 0)
   modal.selectedPreferredCrafter = nil
 
   UIDropDownMenu_Initialize(selectedCrafterDrop, function(_, level, menuList)
@@ -2452,29 +2456,25 @@ function SND:CreateRequestModal()
   -- Keep a reference for compatibility (used by refreshSelectionContext)
   local selectedCrafterValue = selectedCrafterDrop
 
-  local inputHeader = modal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  inputHeader:SetPoint("TOPLEFT", targetSection, "BOTTOMLEFT", 4, -10)
-  inputHeader:SetText("2) Request Inputs")
-
-  local qtyLabel = modal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-  qtyLabel:SetPoint("TOPLEFT", inputHeader, "BOTTOMLEFT", 0, -8)
-  qtyLabel:SetText("Quantity")
-
   local qtyBox = CreateFrame("EditBox", nil, modal, "InputBoxTemplate")
-  qtyBox:SetSize(60, 24)
-  qtyBox:SetPoint("LEFT", qtyLabel, "RIGHT", 8, 0)
+  qtyBox:SetSize(24, 24)
+  qtyBox:SetPoint("TOPLEFT", selectedCrafterLabel, "BOTTOMLEFT", 8, -8)
   qtyBox:SetAutoFocus(false)
   qtyBox:SetText("1")
   qtyBox:SetScript("OnTextChanged", function()
     refreshMaterialRows()
   end)
 
+  local qtyLabel = modal:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+  qtyLabel:SetPoint("LEFT", qtyBox, "RIGHT", 4, 0)
+  qtyLabel:SetText("Quantity")
+
   local matsStatusCheck = CreateFrame("CheckButton", nil, modal, "UICheckButtonTemplate")
-  matsStatusCheck:SetPoint("TOPLEFT", qtyLabel, "BOTTOMLEFT", 0, -10)
+  matsStatusCheck:SetPoint("TOPLEFT", qtyBox, "BOTTOMLEFT", -8, -4)
   matsStatusCheck.text:SetText("Need mats from crafter")
   matsStatusCheck:SetChecked(false)
 
-  local tipLabel = modal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  local tipLabel = modal:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   tipLabel:SetPoint("TOPLEFT", matsStatusCheck, "BOTTOMLEFT", 4, -8)
   tipLabel:SetText("Offered Tip (gold)")
 
@@ -2488,7 +2488,7 @@ function SND:CreateRequestModal()
   tipHint:SetPoint("LEFT", tipBox, "RIGHT", 6, 0)
   tipHint:SetText("(optional)")
 
-  local notesLabel = modal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  local notesLabel = modal:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
   notesLabel:SetPoint("TOPLEFT", tipLabel, "BOTTOMLEFT", 0, -8)
   notesLabel:SetText("Notes")
 
@@ -2498,17 +2498,17 @@ function SND:CreateRequestModal()
   notesBox:SetHeight(24)
   notesBox:SetAutoFocus(false)
 
-  local matsHeader = modal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  local matsHeader = modal:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
   matsHeader:SetPoint("TOPLEFT", notesBox, "BOTTOMLEFT", 0, -10)
-  matsHeader:SetText("3) Materials (Required + Owned)")
+  matsHeader:SetText("Materials (Required + Owned)")
 
-  local matsLabel = modal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  local matsLabel = modal:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
   matsLabel:SetPoint("TOPLEFT", matsHeader, "BOTTOMLEFT", 0, -4)
-  matsLabel:SetText("Edit owned values in the right column")
+  matsLabel:SetText("Input how many you will send to the crafter right boxes")
 
   local matsScroll = CreateFrame("ScrollFrame", nil, modal, "UIPanelScrollFrameTemplate")
   matsScroll:SetPoint("TOPLEFT", matsLabel, "BOTTOMLEFT", 0, -4)
-  matsScroll:SetPoint("RIGHT", modal, "RIGHT", -24, 0)
+  matsScroll:SetPoint("RIGHT", modal, "RIGHT", -36, 0)
 
   local matsScrollChild = CreateFrame("Frame", nil, matsScroll)
   matsScrollChild:SetPoint("TOPLEFT", 0, 0)
@@ -2519,14 +2519,14 @@ function SND:CreateRequestModal()
   matsEmptyText:SetPoint("TOPLEFT", 2, -2)
   matsEmptyText:SetText(T("Select a recipe to see required materials."))
 
-  local actionHeader = modal:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  local actionHeader = modal:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
   actionHeader:SetPoint("BOTTOMLEFT", modal, "BOTTOMLEFT", 14, 38)
-  actionHeader:SetText("4) Actions")
+  actionHeader:SetText("Actions")
 
   matsScroll:SetPoint("BOTTOMRIGHT", actionHeader, "TOPRIGHT", -18, 10)
 
   local submit = CreateFrame("Button", nil, modal, "UIPanelButtonTemplate")
-  submit:SetPoint("BOTTOMRIGHT", modal, "BOTTOMRIGHT", -14, 10)
+  submit:SetPoint("BOTTOM", modal, "BOTTOM", -48, 10)
   submit:SetSize(100, 24)
   submit:SetText("Create")
   submit:SetScript("OnClick", function()
@@ -2570,7 +2570,7 @@ function SND:CreateRequestModal()
   end)
 
   local cancel = CreateFrame("Button", nil, modal, "UIPanelButtonTemplate")
-  cancel:SetPoint("RIGHT", submit, "LEFT", -8, 0)
+  cancel:SetPoint("LEFT", submit, "RIGHT", 12, 0)
   cancel:SetSize(100, 24)
   cancel:SetText("Cancel")
   cancel:SetScript("OnClick", function()
@@ -2623,7 +2623,7 @@ function SND:ShowRequestModal()
   self.requestModal.selectedRecipePrefill = nil
   self.requestModal.selectedRecipeItemID = nil
   self.requestModal.selectedRecipeItemLink = nil
-  self.requestModal.selectedRecipeItemText = "FUCK THIS 3"
+  self.requestModal.selectedRecipeItemText = nil
   self.requestModal.selectedRecipeProfessionName = nil
   self.requestModal.selectedRecipeProfessionSkillLineID = nil
   self.requestModal.selectedRecipeOutputLink = nil
