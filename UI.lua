@@ -1605,33 +1605,51 @@ function SND:CreateMeTab(parent)
   scaleLabel:SetPoint("TOPLEFT", priceSourceDropdown, "BOTTOMLEFT", 16, -6)
   scaleLabel:SetText("UI Scale")
 
-  local scaleSlider = CreateFrame("Slider", "SNDUIScaleSlider", leftColumn, "OptionsSliderTemplate")
-  scaleSlider:SetPoint("TOPLEFT", scaleLabel, "BOTTOMLEFT", 0, -8)
-  scaleSlider:SetWidth(160)
-  scaleSlider:SetMinMaxValues(0.5, 1.5)
-  scaleSlider:SetValueStep(0.01)
-  scaleSlider:SetValue(SND.db.config.uiScale or 1.0)
-  scaleSlider.Low:SetText("50%")
-  scaleSlider.High:SetText("150%")
-  scaleSlider.Text:SetText(math.floor((SND.db.config.uiScale or 1.0) * 100 + 0.5) .. "%")
-  scaleSlider:SetScript("OnValueChanged", function(_, value)
-    scaleSlider.Text:SetText(math.floor(value * 100 + 0.5) .. "%")
-    -- Defer SetScale by one frame so the drag handler isn't disrupted
-    C_Timer.After(0, function()
-      if SND.mainFrame then
-        SND.mainFrame:SetScale(value)
-      end
-    end)
-  end)
-  scaleSlider:SetScript("OnMouseUp", function()
-    local value = math.floor(scaleSlider:GetValue() * 20 + 0.5) / 20
-    SND.db.config.uiScale = value
-    scaleSlider:SetValue(value)
+  local scaleInput = CreateFrame("EditBox", nil, leftColumn, "InputBoxTemplate")
+  scaleInput:SetPoint("TOPLEFT", scaleLabel, "BOTTOMLEFT", 0, -4)
+  scaleInput:SetSize(60, 24)
+  scaleInput:SetAutoFocus(false)
+  scaleInput:SetMaxLetters(3)
+  scaleInput:SetText(tostring(math.floor((SND.db.config.uiScale or 1.0) * 100 + 0.5)))
+
+  local scaleHint = leftColumn:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+  scaleHint:SetPoint("LEFT", scaleInput, "RIGHT", 6, 0)
+  scaleHint:SetText("% (50-150)")
+
+  local function applyScaleFromInput()
+    local text = scaleInput:GetText() or ""
+    local num = tonumber(text)
+    if not num then
+      scaleInput:SetText(tostring(math.floor((SND.db.config.uiScale or 1.0) * 100 + 0.5)))
+      return
+    end
+    num = math.max(50, math.min(150, math.floor(num + 0.5)))
+    local scale = num / 100
+    scale = math.floor(scale * 20 + 0.5) / 20
+    num = math.floor(scale * 100 + 0.5)
+    scaleInput:SetText(tostring(num))
+    SND.db.config.uiScale = scale
+    if SND.mainFrame then
+      SND.mainFrame:SetScale(scale)
+    end
     if type(SND.RefreshOptions) == "function" then
       SND:RefreshOptions()
     end
+  end
+
+  scaleInput:SetScript("OnEnterPressed", function(editBox)
+    applyScaleFromInput()
+    editBox:ClearFocus()
   end)
-  frame.scaleSlider = scaleSlider
+  scaleInput:SetScript("OnEscapePressed", function(editBox)
+    editBox:SetText(tostring(math.floor((SND.db.config.uiScale or 1.0) * 100 + 0.5)))
+    editBox:ClearFocus()
+  end)
+  scaleInput:SetScript("OnEditFocusLost", function()
+    applyScaleFromInput()
+  end)
+
+  frame.scaleInput = scaleInput
 
   local scanLogCopyModal = CreateFrame("Frame", nil, frame, "BackdropTemplate")
   scanLogCopyModal:SetSize(540, 280)

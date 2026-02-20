@@ -16,6 +16,7 @@ SND.comms = {
   chunkTimeout = 30,
   incrementalSyncInterval = 15,  -- Incremental (dirty-only) broadcast every 15s
   fullSyncInterval = 120,        -- Full state rebroadcast every 120s as fallback
+  rollCallInterval = 300,        -- Profession roll call every 5 minutes
 }
 
 local function countTableEntries(tbl)
@@ -168,6 +169,8 @@ function SND:InitComms()
     materials = false,
   }
 
+  self.comms.lastRollCallResponseAt = 0  -- cooldown for responding to roll calls
+
   self:RefreshGuildMemberCacheFromRoster()
 
   -- Combat state tracking for comms
@@ -312,6 +315,11 @@ function SND:InitComms()
       end
     end
   end)
+
+  -- Profession roll call: query peers for missing profession data every 5 minutes
+  self:ScheduleSNDRepeatingTimer(self.comms.rollCallInterval, function()
+    self:SendProfessionRollCall()
+  end)
 end
 
 function SND:UpdateGuildMemberCache(memberSet)
@@ -388,6 +396,8 @@ function SND:HandleAddonMessage(payload, channel, sender)
     end
   elseif messageType == "PROF_DATA" then
     self:HandleProfessionData(payload, sender)
+  elseif messageType == "PROF_ROLL_CALL" then
+    self:HandleProfessionRollCall(payload, sender)
   end
 end
 
@@ -587,6 +597,18 @@ function SND:GetCommsMessageCounts()
 
   local stats = self.comms.stats or {}
 
+  -- Authority info
+  local authority, isAuthority = self:GetAuthority()
+  local peerCount = 0
+  for _ in pairs(self.comms.peerVersions or {}) do
+    peerCount = peerCount + 1
+  end
+
+  -- Next full sync countdown
+  local lastFullSync = tonumber(self.comms.lastFullSyncAt) or 0
+  local fullSyncInterval = tonumber(self.comms.fullSyncInterval) or 120
+  local nextFullSync = math.max(0, math.floor((lastFullSync + fullSyncInterval) - now))
+
   return {
     oneMin = oneMin,
     fiveMin = fiveMin,
@@ -602,6 +624,10 @@ function SND:GetCommsMessageCounts()
     nonGuild = stats.nonGuild or 0,
     combatQueued = stats.combatQueued or 0,
     errors = stats.errors or 0,
+    authority = authority,
+    isAuthority = isAuthority,
+    peerCount = peerCount,
+    nextFullSync = nextFullSync,
   }
 end
 
@@ -627,6 +653,33 @@ function SND:GetPeerStats()
     outdated = totalPeers - onCurrentVersion,
     byVersion = byVersion,
   }
+end
+
+--- Compute the elected authority for shared-state broadcasts.
+-- Deterministic: sort all known SND peers (including self) alphabetically,
+-- pick the first. Every peer independently arrives at the same answer.
+function SND:GetAuthority()
+  local localKey = self:GetPlayerKey(UnitName("player"))
+  local peers = {}
+  local seen = {}
+
+  -- Include self
+  if localKey then
+    peers[#peers + 1] = localKey
+    seen[localKey] = true
+  end
+
+  -- Include all peers that have sent HELLO this session
+  for key, _ in pairs(self.comms.peerVersions or {}) do
+    if not seen[key] then
+      peers[#peers + 1] = key
+      seen[key] = true
+    end
+  end
+
+  table.sort(peers)
+  local authority = peers[1]
+  return authority, authority == localKey
 end
 
 function SND:SendHello()
@@ -724,6 +777,67 @@ function SND:HandleProfessionData(payload, sender)
     tostring(senderKey),
     countTableEntries(senderEntry.professions)
   ))
+end
+
+function SND:SendProfessionRollCall()
+  -- Build list of playerKeys for which we have non-empty profession data
+  local knownKeys = {}
+  for playerKey, playerEntry in pairs(self.db.players) do
+    if playerEntry.professions and next(playerEntry.professions) then
+      table.insert(knownKeys, playerKey)
+    end
+  end
+  local payload = "PROF_ROLL_CALL|" .. table.concat(knownKeys, ",")
+  debugComms(self, string.format("Comms: SendProfessionRollCall known=%d payloadLen=%d", #knownKeys, #payload))
+  self:SendAddonMessage(payload)
+end
+
+function SND:HandleProfessionRollCall(payload, sender)
+  local knownKeysStr = string.match(payload, "^PROF_ROLL_CALL|(.*)$")
+  if not knownKeysStr then
+    return
+  end
+
+  -- Parse the comma-separated list of playerKeys the sender knows about
+  local knownSet = {}
+  for key in string.gmatch(knownKeysStr, "[^,]+") do
+    knownSet[key] = true
+  end
+
+  -- Check if our own playerKey is in the sender's known set
+  local localPlayerKey = self:GetPlayerKey(UnitName("player"))
+  if not localPlayerKey then
+    return
+  end
+
+  if knownSet[localPlayerKey] then
+    return
+  end
+
+  -- Check that we actually have profession data to share
+  local localEntry = self.db.players[localPlayerKey]
+  if not localEntry or not localEntry.professions or not next(localEntry.professions) then
+    return
+  end
+
+  -- Check cooldown: don't respond more than once per 120 seconds
+  local now = self:Now()
+  local cooldown = 120
+  if (now - (self.comms.lastRollCallResponseAt or 0)) < cooldown then
+    debugComms(self, string.format("Comms: HandleProfessionRollCall response on cooldown from=%s", tostring(sender)))
+    return
+  end
+
+  -- Schedule a re-broadcast with random delay to avoid thundering herd
+  local delay = math.random(5, 30)
+  debugComms(self, string.format(
+    "Comms: HandleProfessionRollCall our data missing from=%s, scheduling PROF_DATA in %ds",
+    tostring(sender), delay
+  ))
+  self.comms.lastRollCallResponseAt = now
+  self:ScheduleSNDTimer(delay, function()
+    self:SendProfessionData()
+  end)
 end
 
 function SND:SendAddonMessage(payload, priority)

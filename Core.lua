@@ -306,35 +306,60 @@ function SND:RefreshMeTab(meFrame)
 
   if meFrame.commsStatsText then
     local cs = self:GetCommsMessageCounts()
-    local lines = {
-      string.format("Received: %d (1m) / %d (5m) / %d (60m)",
-        cs.oneMin, cs.fiveMin, cs.sixtyMin),
-    }
-    -- Per-type RX breakdown sorted by count descending
+    local lines = {}
+
+    -- Authority & network role
+    local authorityLabel = cs.authority or "unknown"
+    if cs.isAuthority then
+      authorityLabel = "|cff00ff00" .. authorityLabel .. " (you)|r"
+    end
+    table.insert(lines, string.format("Authority: %s  |  Peers: %d  |  Next sync: %ds",
+      authorityLabel, cs.peerCount, cs.nextFullSync))
+
+    -- RX traffic
+    table.insert(lines, string.format("RX: %d (1m) / %d (5m) / %d (60m)",
+      cs.oneMin, cs.fiveMin, cs.sixtyMin))
     local rxList = {}
     for msgType, count in pairs(cs.byType) do
       table.insert(rxList, { name = msgType, count = count })
     end
     table.sort(rxList, function(a, b) return a.count > b.count end)
+    local rxParts = {}
     for _, rx in ipairs(rxList) do
-      table.insert(lines, string.format("  %s: %d", rx.name, rx.count))
+      table.insert(rxParts, string.format("%s: %d", rx.name, rx.count))
     end
-    -- Sent stats
-    table.insert(lines, string.format("Sent: %d total", cs.totalSent))
+    if #rxParts > 0 then
+      table.insert(lines, "  " .. table.concat(rxParts, "  |  "))
+    end
+
+    -- TX traffic
+    table.insert(lines, string.format("TX: %d total", cs.totalSent))
     local txList = {}
     for msgType, count in pairs(cs.sent) do
       table.insert(txList, { name = msgType, count = count })
     end
     table.sort(txList, function(a, b) return a.count > b.count end)
+    local txParts = {}
     for _, tx in ipairs(txList) do
-      table.insert(lines, string.format("  %s: %d", tx.name, tx.count))
+      table.insert(txParts, string.format("%s: %d", tx.name, tx.count))
     end
-    -- Status counters
-    table.insert(lines, string.format("Rate limited: %d  |  Non-guild: %d  |  Errors: %d",
-      cs.rateLimited, cs.nonGuild, cs.errors))
-    table.insert(lines, string.format("Combat queued: %d  |  Send blocked: %d  |  Dirty: %d",
-      cs.combatQueued, cs.sendBlocked, cs.dirtyCount))
-    table.insert(lines, string.format("Chunk buffers: %d", cs.chunkBuffers))
+    if #txParts > 0 then
+      table.insert(lines, "  " .. table.concat(txParts, "  |  "))
+    end
+
+    -- Health
+    local healthParts = {}
+    if cs.rateLimited > 0 then table.insert(healthParts, string.format("|cffff0000Rate limited: %d|r", cs.rateLimited)) end
+    if cs.errors > 0 then table.insert(healthParts, string.format("|cffff0000Errors: %d|r", cs.errors)) end
+    if cs.nonGuild > 0 then table.insert(healthParts, string.format("Non-guild: %d", cs.nonGuild)) end
+    if cs.sendBlocked > 0 then table.insert(healthParts, string.format("Send blocked: %d", cs.sendBlocked)) end
+    if cs.combatQueued > 0 then table.insert(healthParts, string.format("Combat queued: %d", cs.combatQueued)) end
+    if cs.dirtyCount > 0 then table.insert(healthParts, string.format("Dirty: %d", cs.dirtyCount)) end
+    if cs.chunkBuffers > 0 then table.insert(healthParts, string.format("Chunks pending: %d", cs.chunkBuffers)) end
+    if #healthParts > 0 then
+      table.insert(lines, table.concat(healthParts, "  |  "))
+    end
+
     meFrame.commsStatsText:SetText(table.concat(lines, "\n"))
   end
 end

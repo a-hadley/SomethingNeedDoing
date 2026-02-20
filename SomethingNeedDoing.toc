@@ -2,7 +2,7 @@
 ## Title: Something Need Doing
 ## Notes: Guild-wide profession directory and craft request board.
 ## Author: Ariailis-Dreamscythe <All Gear No Fear>
-## Version: 0.6.3
+## Version: 0.6.4
 ## SavedVariables: SomethingNeedDoingDB
 ## OptionalDeps: Auctionator, TradeSkillMaster
 

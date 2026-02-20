@@ -123,11 +123,11 @@ function SND:GetOptionsTable()
               if self.mainFrame then
                 self.mainFrame:SetScale(value)
               end
-              -- Sync the in-addon slider if it exists
+              -- Sync the in-addon input box if it exists
               if self.mainFrame and self.mainFrame.contentFrames then
                 local optionsFrame = self.mainFrame.contentFrames[4]
-                if optionsFrame and optionsFrame.scaleSlider then
-                  optionsFrame.scaleSlider:SetValue(value)
+                if optionsFrame and optionsFrame.scaleInput then
+                  optionsFrame.scaleInput:SetText(tostring(math.floor(value * 100 + 0.5)))
                 end
               end
             end,
